@@ -11,16 +11,23 @@ export default async function handler(req, res) {
   const { acao, termo, codigoParada } = req.query;
 
   try {
+    // Autenticação na SPTrans
     const authResponse = await fetch(`${BASE_URL}/Login/Autenticar?token=${TOKEN}`, {
-      method: 'POST'
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
+      }
     });
     
     const authText = await authResponse.text();
     if (authText.toLowerCase() !== 'true') {
-      return res.status(401).json({ erro: "Falha de autenticação na API SPTrans" });
+      return res.status(401).json({ erro: "Token inválido na SPTrans" });
     }
 
-    const cookieHeader = authResponse.headers.get('set-cookie') || '';
+    // Captura o cookie gerado no login
+    const setCookie = authResponse.headers.get('set-cookie');
+    const cookies = setCookie ? setCookie.split(',')[0] : '';
 
     let endpoint = '';
     if (acao === 'buscarParada') {
@@ -28,13 +35,16 @@ export default async function handler(req, res) {
     } else if (acao === 'previsaoParada') {
       endpoint = `/Previsao/Parada?codigoParada=${encodeURIComponent(codigoParada)}`;
     } else {
-      return res.status(400).json({ erro: "Ação desconhecida" });
+      return res.status(400).json({ erro: "Ação inválida" });
     }
 
+    // Requisição dos dados com o cookie de autenticação
     const apiResponse = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: {
-        'Cookie': cookieHeader
+        'Cookie': cookies,
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
       }
     });
 
