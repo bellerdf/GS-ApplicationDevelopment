@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -11,23 +12,16 @@ export default async function handler(req, res) {
   const { acao, termo, codigoParada } = req.query;
 
   try {
-    // Autenticação na SPTrans
-    const authResponse = await fetch(`${BASE_URL}/Login/Autenticar?token=${TOKEN}`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0'
-      }
+    const authRes = await fetch(`${BASE_URL}/Login/Autenticar?token=${TOKEN}`, {
+      method: 'POST'
     });
     
-    const authText = await authResponse.text();
-    if (authText.toLowerCase() !== 'true') {
-      return res.status(401).json({ erro: "Token inválido na SPTrans" });
+    const authText = await authRes.text();
+    if (!authText.includes('true')) {
+      return res.status(401).json({ erro: "Autenticação falhou na SPTrans" });
     }
 
-    // Captura o cookie gerado no login
-    const setCookie = authResponse.headers.get('set-cookie');
-    const cookies = setCookie ? setCookie.split(',')[0] : '';
+    const cookieHeader = authRes.headers.get('set-cookie') || '';
 
     let endpoint = '';
     if (acao === 'buscarParada') {
@@ -38,20 +32,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ erro: "Ação inválida" });
     }
 
-    // Requisição dos dados com o cookie de autenticação
-    const apiResponse = await fetch(`${BASE_URL}${endpoint}`, {
+    const dataRes = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: {
-        'Cookie': cookies,
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0'
+        'Cookie': cookieHeader
       }
     });
 
-    const data = await apiResponse.json();
+    const data = await dataRes.json();
     return res.status(200).json(data);
 
-  } catch (err) {
-    return res.status(500).json({ erro: err.message });
+  } catch (error) {
+    return res.status(500).json({ erro: error.message });
   }
 }
