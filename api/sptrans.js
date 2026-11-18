@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -15,34 +14,27 @@ export default async function handler(req, res) {
     const authRes = await fetch(`${BASE_URL}/Login/Autenticar?token=${TOKEN}`, {
       method: 'POST'
     });
-    
     const authText = await authRes.text();
+
     if (!authText.includes('true')) {
-      return res.status(401).json({ erro: "Autenticação falhou na SPTrans" });
+      return res.status(401).json({ erro: "Token inválido" });
     }
 
-    const cookieHeader = authRes.headers.get('set-cookie') || '';
+    // Pega o cookie retornado pelo login
+    const cookie = authRes.headers.get('set-cookie') || '';
 
-    let endpoint = '';
-    if (acao === 'buscarParada') {
-      endpoint = `/Parada/Buscar?termosBusca=${encodeURIComponent(termo)}`;
-    } else if (acao === 'previsaoParada') {
-      endpoint = `/Previsao/Parada?codigoParada=${encodeURIComponent(codigoParada)}`;
-    } else {
-      return res.status(400).json({ erro: "Ação inválida" });
-    }
+    let endpoint = acao === 'buscarParada' 
+      ? `/Parada/Buscar?termosBusca=${encodeURIComponent(termo)}`
+      : `/Previsao/Parada?codigoParada=${encodeURIComponent(codigoParada)}`;
 
     const dataRes = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'GET',
-      headers: {
-        'Cookie': cookieHeader
-      }
+      headers: { 'Cookie': cookie }
     });
 
     const data = await dataRes.json();
     return res.status(200).json(data);
-
-  } catch (error) {
-    return res.status(500).json({ erro: error.message });
+  } catch (err) {
+    return res.status(500).json({ erro: err.message });
   }
 }
