@@ -1,47 +1,242 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Ponto SP - Olho Vivo</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <header>
-        <div class="header-content">
-            <h1>🚌 Meu Ponto SP</h1>
-            <p>Consulte paradas e previsão de chegada em tempo real</p>
-        </div>
-        <button id="btn-contraste" onclick="toggleContraste()">👁️ Alto Contraste</button>
-    </header>
+:root {
+    --sptrans-red: #E30613;
+    --sptrans-red-hover: #b8040f;
+    --bg-main: #0f1115;
+    --bg-card: #181b20;
+    --bg-input: #22262e;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --border-subtle: #2d323b;
+    --accent-green: #10b981;
+}
 
-    <main class="container">
-        <section class="search-section">
-            <h2>Pesquisar Ponto de Ônibus</h2>
-            <div class="search-box">
-                <input type="text" id="input-termo" placeholder="Ex: Av Paulista, Lapa, etc...">
-                <button onclick="buscarParadas()">Buscar</button>
-            </div>
-        </section>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
 
-        <section id="resultados-section" class="hidden">
-            <h2>Selecione a Parada:</h2>
-            <div id="lista-paradas" class="card-grid"></div>
-        </section>
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 
-        <section id="previsao-section" class="hidden">
-            <div class="previsao-header">
-                <h2 id="titulo-parada">Previsão para o Ponto</h2>
-                <button onclick="voltarParaBuscas()">← Outra Parada</button>
-            </div>
-            <div id="lista-previsoes" class="card-grid"></div>
-        </section>
-    </main>
+header {
+    background: linear-gradient(135deg, #181b20 0%, #121418 100%);
+    border-bottom: 4px solid var(--sptrans-red);
+    padding: 1.5rem 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
 
-    <footer>
-        <p>Dados fornecidos por <strong>SPTrans (API Olho Vivo)</strong>. Desenvolvido para a Global Solution FIAP.</p>
-    </footer>
+.header-container {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
 
-    <script src="script.js"></script>
-</body>
-</html>
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.badge-sptrans {
+    background-color: var(--sptrans-red);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+header h1 {
+    color: #ffffff;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+header p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.container {
+    max-width: 960px;
+    margin: 2.5rem auto;
+    padding: 0 1rem;
+    width: 100%;
+    flex: 1;
+}
+
+.search-section {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    margin-bottom: 2rem;
+}
+
+.search-section h2 {
+    margin-bottom: 1rem;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.search-box {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-box input:focus {
+    border-color: var(--sptrans-red);
+    box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.2);
+}
+
+.search-box button {
+    background-color: var(--sptrans-red);
+    color: #ffffff;
+    border: none;
+    padding: 0 1.8rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.search-box button:hover {
+    background-color: var(--sptrans-red-hover);
+}
+
+.search-box button:active {
+    transform: scale(0.98);
+}
+
+.section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--sptrans-red);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.2rem;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-top: 3px solid var(--sptrans-red);
+    padding: 1.4rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+    border-color: var(--sptrans-red);
+}
+
+.card h3 {
+    color: #ffffff;
+    font-size: 1.1rem;
+}
+
+.card p {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.4;
+}
+
+.card p strong {
+    color: var(--text-primary);
+}
+
+.previsao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.btn-voltar {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-voltar:hover {
+    border-color: var(--sptrans-red);
+    background: #2b303a;
+}
+
+.tag-acessivel {
+    align-self: flex-start;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    font-size: 0.78rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-top: 0.4rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+    .search-box {
+        flex-direction: column;
+    }
+    .search-box button {
+        padding: 0.85rem;
+    }
+}
