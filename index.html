@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Ponto SP - Olho Vivo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🚌 Meu Ponto SP</h1>
+            <p>Consulte paradas e previsão de chegada em tempo real</p>
+        </div>
+        <button id="btn-contraste" onclick="toggleContraste()">👁️ Alto Contraste</button>
+    </header>
+
+    <main class="container">
+        <section class="search-section">
+            <h2>Pesquisar Ponto de Ônibus</h2>
+            <div class="search-box">
+                <input type="text" id="input-termo" placeholder="Ex: Av Paulista, Lapa, etc...">
+                <button onclick="buscarParadas()">Buscar</button>
+            </div>
+        </section>
+
+        <section id="resultados-section" class="hidden">
+            <h2>Selecione a Parada:</h2>
+            <div id="lista-paradas" class="card-grid"></div>
+        </section>
+
+        <section id="previsao-section" class="hidden">
+            <div class="previsao-header">
+                <h2 id="titulo-parada">Previsão para o Ponto</h2>
+                <button onclick="voltarParaBuscas()">← Outra Parada</button>
+            </div>
+            <div id="lista-previsoes" class="card-grid"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Dados fornecidos por <strong>SPTrans (API Olho Vivo)</strong>. Desenvolvido para a Global Solution FIAP.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
