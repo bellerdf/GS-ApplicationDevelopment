@@ -1,6 +1,8 @@
-function toggleContraste() {
-    document.body.classList.toggle('high-contrast');
-}
+document.getElementById('input-termo').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        buscarParadas();
+    }
+});
 
 async function buscarParadas() {
     const termo = document.getElementById('input-termo').value.trim();
@@ -9,16 +11,19 @@ async function buscarParadas() {
         return;
     }
 
+    const listaDiv = document.getElementById('lista-paradas');
+    listaDiv.innerHTML = '<p>Buscando paradas...</p>';
+    document.getElementById('previsao-section').classList.add('hidden');
+    document.getElementById('resultados-section').classList.remove('hidden');
+
     try {
         const res = await fetch(`/api/sptrans?acao=buscarParada&termo=${encodeURIComponent(termo)}`);
         const paradas = await res.json();
 
-        const listaDiv = document.getElementById('lista-paradas');
         listaDiv.innerHTML = '';
 
         if (!paradas || paradas.length === 0) {
             listaDiv.innerHTML = '<p>Nenhuma parada encontrada para este termo.</p>';
-            document.getElementById('resultados-section').classList.remove('hidden');
             return;
         }
 
@@ -28,15 +33,13 @@ async function buscarParadas() {
             card.innerHTML = `
                 <h3>${p.np}</h3>
                 <p><strong>Endereço:</strong> ${p.ed}</p>
-                <p style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">Código: ${p.cp}</p>
+                <p style="font-size: 0.8rem; margin-top: 0.25rem;">Código da Parada: ${p.cp}</p>
             `;
             card.onclick = () => carregarPrevisao(p.cp, p.np);
             listaDiv.appendChild(card);
         });
-
-        document.getElementById('resultados-section').classList.remove('hidden');
     } catch (error) {
-        alert('Erro ao buscar paradas.');
+        listaDiv.innerHTML = '<p>Erro ao buscar paradas. Tente novamente.</p>';
     }
 }
 
@@ -46,7 +49,7 @@ async function carregarPrevisao(codigoParada, nomeParada) {
     document.getElementById('previsao-section').classList.remove('hidden');
 
     const listaPrev = document.getElementById('lista-previsoes');
-    listaPrev.innerHTML = '<p>Carregando previsões em tempo real...</p>';
+    listaPrev.innerHTML = '<p>Carregando veículos em tempo real...</p>';
 
     try {
         const res = await fetch(`/api/sptrans?acao=previsaoParada&codigoParada=${codigoParada}`);
@@ -55,7 +58,7 @@ async function carregarPrevisao(codigoParada, nomeParada) {
         listaPrev.innerHTML = '';
 
         if (!dados.p || !dados.p.l || dados.p.l.length === 0) {
-            listaPrev.innerHTML = '<p>Não há previsão de ônibus para este ponto no momento.</p>';
+            listaPrev.innerHTML = '<p>Não há ônibus previstos para este ponto no momento.</p>';
             return;
         }
 
@@ -64,16 +67,17 @@ async function carregarPrevisao(codigoParada, nomeParada) {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <h3>Linha: ${linha.c}</h3>
-                    <p><strong>Destino:</strong> ${linha.lt0} - ${linha.lt1}</p>
-                    <p><strong>Chegada prevista:</strong> ${veiculo.t}</p>
-                    ${veiculo.a ? '<span class="tag-acessivel">♿ Acessível</span>' : ''}
+                    <h3>🚌 Linha ${linha.c}</h3>
+                    <p><strong>Letreiro:</strong> ${linha.lt0} ➔ ${linha.lt1}</p>
+                    <p><strong>Chegada estimada:</strong> ${veiculo.t}</p>
+                    <p style="font-size: 0.8rem;">Prefixo do veículo: ${veiculo.p}</p>
+                    ${veiculo.a ? '<span class="tag-acessivel">♿ Veículo Acessível</span>' : ''}
                 `;
                 listaPrev.appendChild(card);
             });
         });
     } catch (error) {
-        listaPrev.innerHTML = '<p>Erro ao carregar previsões da API.</p>';
+        listaPrev.innerHTML = '<p>Erro ao carregar previsões.</p>';
     }
 }
 
